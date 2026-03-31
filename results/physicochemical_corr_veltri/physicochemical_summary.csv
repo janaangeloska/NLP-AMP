@@ -1,0 +1,13 @@
+Model,Sequence,Prediction,r_hydro,p_hydro,r_charge,p_charge
+ESM-2,AMP_1 (magainin),AMP,0.485,0.019,-0.046,0.8342
+ESM-2,AMP_2 (defensin),AMP,-0.26,0.1657,0.192,0.3088
+ESM-2,nonAMP_1,AMP,-0.215,0.2451,0.19,0.3072
+ESM-2,nonAMP_2,non-AMP,0.135,0.4762,-0.321,0.0838
+ProtBERT,AMP_1 (magainin),AMP,0.385,0.0693,-0.244,0.261
+ProtBERT,AMP_2 (defensin),AMP,0.465,0.0096,-0.085,0.6549
+ProtBERT,nonAMP_1,non-AMP,0.042,0.8227,-0.092,0.6233
+ProtBERT,nonAMP_2,non-AMP,-0.253,0.1777,-0.086,0.653
+ProtT5,AMP_1 (magainin),AMP,0.016,0.9413,-0.089,0.6867
+ProtT5,AMP_2 (defensin),AMP,0.245,0.1917,-0.178,0.347
+ProtT5,nonAMP_1,non-AMP,-0.116,0.5339,-0.353,0.0513
+ProtT5,nonAMP_2,non-AMP,0.347,0.0605,0.086,0.6509
