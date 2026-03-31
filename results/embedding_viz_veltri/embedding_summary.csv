@@ -1,0 +1,4 @@
+Model,tsne_silhouette_true,tsne_silhouette_pred,accuracy_pct,umap_silhouette_true,umap_silhouette_pred
+ESM-2,0.5333,0.6357,92.49,0.5184,0.6026
+ProtBERT,0.3648,0.5009,90.87,0.5708,0.7962
+ProtT5,0.2898,0.3438,89.75,0.2066,0.2704
