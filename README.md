@@ -8,6 +8,8 @@ Antimicrobial peptides (AMPs) are short amino acid sequences with natural antiba
 
 This project frames AMP prediction as a binary sequence classification task and systematically compares four approaches of increasing complexity: a classical k-mer baseline, and three pre-trained protein language models (ProtBERT, ESM-2, ProtT5). All models are evaluated on two established benchmarks under identical experimental conditions, enabling a direct comparison of representation quality versus model scale.
 
+Beyond classification performance, the project includes an interpretability and error analysis pipeline covering attention visualization, embedding geometry, physicochemical correlation, and cross-dataset error profiling.
+
 ---
 
 ## Models
@@ -35,23 +37,36 @@ Both datasets are pre-split into train / val / test with a fixed `random_state=4
 
 ### Veltri dataset
 
-| Model | Accuracy | F1 | AUC |
-|---|---|---|---|
+| Model     | Accuracy  | F1        | AUC       |
+|-----------|-----------|-----------|-----------|
 | **ESM-2** | **0.924** | **0.922** | **0.971** |
-| ProtT5 | 0.897 | 0.887 | 0.954 |
-| ProtBERT | 0.860 | 0.853 | 0.921 |
-| Baseline | 0.828 | 0.830 | 0.907 |
+| ProtT5    | 0.897     | 0.887     | 0.954     |
+| ProtBERT  | 0.860     | 0.853     | 0.921     |
+| Baseline  | 0.828     | 0.830     | 0.907     |
 
 ### LMPred dataset
 
-| Model | Accuracy | F1 | AUC |
-|---|---|---|---|
+| Model      | Accuracy  | F1        | AUC       |
+|------------|-----------|-----------|-----------|
 | **ProtT5** | **0.889** | **0.890** | **0.939** |
-| ProtBERT | 0.869 | 0.872 | 0.931 |
-| ESM-2 | 0.847 | 0.845 | 0.915 |
-| Baseline | 0.750 | 0.754 | 0.815 |
+| ProtBERT   | 0.869     | 0.872     | 0.931     |
+| ESM-2      | 0.847     | 0.845     | 0.915     |
+| Baseline   | 0.750     | 0.754     | 0.815     |
 
 **Key finding:** ESM-2 (8M parameters) outperforms ProtBERT (420M) on the smaller Veltri dataset, suggesting that evolutionary specialization matters more than model scale for limited data. On the larger LMPred dataset, ProtT5 (3B) takes the lead - larger models benefit from more training examples.
+
+---
+
+## Analysis & Interpretability
+ 
+Beyond classification metrics, the project includes four interpretability analyses run on both datasets.
+ 
+| Script                              | Description                                                                                                    |
+|-------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| `08_attention_visualization.py`     | Position importance per amino acid for four representative sequences; attention entropy summary across models. |
+| `09_embedding_visualization.py`     | t-SNE and UMAP projections of sequence embeddings for all three models.                                        |
+| `10_physicochemical_correlation.py` | Pearson r between attention weights and hydrophobicity / charge across models and sequences.                   |
+| `11_error_analysis.py`              | FN/FP profiling by length, charge, and hydrophobicity across both datasets.                                    |
 
 ---
 
@@ -70,12 +85,45 @@ NLP-AMP/
 │   ├── 05_esm2_model.ipynb
 │   └── 07_results_comparison.ipynb
 ├── scripts/
-│   └── 06_run_prott5_training.py
+│   ├── 06_run_prott5_training.py
+│   ├── 08_attention_visualization.py
+│   ├── 09_embedding_visualization.py
+│   ├── 10_physicochemical_correlation.py
+│   └── 11_error_analysis.py
 ├── results/
 │   ├── baseline_results.csv
-│   └── results_all_models.csv
-├── visualizations/
-│   └── physicochemical_properties.png
+│   ├── results_all_models.csv
+│   ├── attention_viz_veltri/
+│   │   ├── attention_summary.csv
+│   │   ├── comparison_3models_AMP_1_magainin.png
+│   │   ├── comparison_3models_AMP_2_defensin.png
+│   │   ├── comparison_3models_nonAMP_1.png
+│   │   └── comparison_3models_nonAMP_2.png
+│   ├── attention_viz_lmpred/
+│   │   └── (same structure as above)
+│   ├── embedding_viz_veltri/
+│   │   ├── embedding_summary.csv
+│   │   ├── embedding_comparison_3models.png
+│   │   ├── embedding_esm_2_tsne_umap.png
+│   │   ├── embedding_protbert_tsne_umap.png
+│   │   └── embedding_prott5_tsne_umap.png
+│   ├── embedding_viz_lmpred/
+│   │   └── (same structure as above)
+│   ├── physicochemical_corr_veltri/
+│   │   ├── physicochemical_summary.csv
+│   │   └── physicochem_summary_heatmap.png
+│   ├── physicochemical_corr_lmpred/
+│   │   └── (same structure as above)
+│   └── error_analysis/
+│       ├── metrics_summary.csv
+│       ├── fn_comparison_3models_veltri.png
+│       ├── fn_comparison_3models_lmpred.png
+│       ├── confidence_esm_2_veltri.png
+│       ├── confidence_esm_2_lmpred.png
+│       ├── confidence_protbert_veltri.png
+│       ├── confidence_protbert_lmpred.png
+│       ├── confidence_prott5_veltri.png
+│       └── confidence_prott5_lmpred.png
 └── README.md
 ```
 
@@ -86,7 +134,7 @@ NLP-AMP/
 ### 1. Install dependencies
 
 ```bash
-pip install torch transformers scikit-learn pandas numpy biopython matplotlib seaborn scipy tqdm
+pip install torch transformers scikit-learn pandas numpy biopython matplotlib seaborn scipy umap-learn tqdm
 ```
 
 ### 2. Data preparation
@@ -111,6 +159,17 @@ The script auto-detects whether it is running inside a Singularity container and
 
 Run `07_results_comparison.ipynb` after all models have been trained.
 
+### 6. Interpretability and error analysis
+ 
+All four analysis scripts require the trained `.pth` weight files in `results/`. Each script loads models sequentially and releases GPU memory between models.
+
+```bash
+python scripts/08_attention_visualization.py
+python scripts/09_embedding_visualization.py   # requires: pip install umap-learn
+python scripts/10_physicochemical_correlation.py
+python scripts/11_error_analysis.py
+```
+
 ---
 
 ## Dependencies
@@ -120,6 +179,7 @@ Run `07_results_comparison.ipynb` after all models have been trained.
 - Hugging Face Transformers
 - scikit-learn
 - BioPython
+- umap-learn
 - pandas, numpy, matplotlib, seaborn, scipy, tqdm
 
 ---
